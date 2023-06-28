@@ -2,11 +2,15 @@ package model;
 
 import etu2000.framework.annotation.Url;
 import etu2000.framework.ModelView;
+import etu2000.framework.FileUpload;
+import java.sql.Date;
 import java.util.Vector;
 
 public class Employee {
     int id;
     String name;
+    Date embauche;
+    FileUpload badge;
 
     public void setId(int id) {
         this.id = id;
@@ -22,6 +26,22 @@ public class Employee {
     
     public String getName() {
         return name;
+    }
+
+    public void setEmbauche(Date embauche){
+        this.embauche = embauche;
+    }
+
+    public Date getEmbauche(){
+        return embauche;
+    }
+
+    public void setBadge(FileUpload badge){
+        this.badge = badge;
+    }
+
+    public FileUpload getBadge(){
+        return badge;
     }
 
     public Employee() {
@@ -45,8 +65,10 @@ public class Employee {
     }
 
     @Url("save-emp")
-    public String save(){
-        return "Sprint 7 marche";
+    public ModelView save(){
+        ModelView view = new ModelView("employe.jsp");
+        view.addItem("employee", this);
+        return view;
     }
 
     @Url("get-info")
@@ -54,10 +76,5 @@ public class Employee {
         ModelView view = new ModelView("saved.jsp");
         view.addItem("employee", name);
         return view;
-    }
-
-    @Url("save-emp")
-    public String save(){
-        return this.getName();
     }
 }

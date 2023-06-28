@@ -3,7 +3,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/artemis/Documents/L2/Web%20dynamique/Framework-sprint1/web/index.jsp</file>
+            <file>file:/home/artemis/NetBeansProjects/Framework/src/java/etu2000/framework/Mapping.java</file>
+            <file>file:/home/artemis/NetBeansProjects/Framework/src/java/etu2000/framework/servlet/FrontServlet.java</file>
+            <file>file:/home/artemis/NetBeansProjects/Framework/web/META-INF/context.xml</file>
         </group>
     </open-files>
 </project-private>

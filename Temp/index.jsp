@@ -6,9 +6,8 @@
         <title>Accueil</title>
     </head>
     <body>
-        <form action="save-emp" method="get">
+        <form action="save-emp" method="post">
             <input type="text" name="id" placeholder="Identifiant" value="1">
-            <input type="text" name="name" placeholder="Nom" value="Diana">
             <input type="submit" value="Valider">
         </form>
         <a href="find-emp">Find</a>

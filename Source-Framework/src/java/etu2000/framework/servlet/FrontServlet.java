@@ -14,6 +14,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.sql.Date;
 import java.util.Arrays;
@@ -71,18 +72,42 @@ public class FrontServlet extends HttpServlet {
                 Mapping mapping = this.getMappingUrls().get(url);
                 Class clazz = Class.forName(mapping.getClassName());
                 Object object = clazz.getConstructor().newInstance();
-                Method method = clazz.getDeclaredMethod(mapping.getMethod());
+                Method[] methods = clazz.getDeclaredMethods();
+                Method method = null;
+                for (Method methode : methods) {
+                    if(methode.getName() == mapping.getMethod()){
+                        method = methode;
+                    }
+                }
 
+                Object[] arguments = null;
                 if(request.getParameterMap() != null){
                     Map<String, String[]> parameter = request.getParameterMap();
                     Set<String> parameterName = parameter.keySet();                    
                     String[] attribute= parameterName.toArray(new String[parameterName.size()]);
                     Field[] objectAttributes= object.getClass().getDeclaredFields();
                     this.setAttribute(request,attribute,objectAttributes,object);
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    if(parameterTypes.length != 0){
+                        arguments = new Object[parameterTypes.length];
+                        Parameter[] parameters = method.getParameters();
+                        int arg = 0;
+                        for (Parameter parametre : parameters) {
+                            String parametreName = parametre.getName();
+                            for (int k = 0; k<attribute.length; k++){
+                                if(attribute[k].equals(parametreName)){
+                                    arguments[arg] = cast(request, parametre, object);
+                                    arg++;
+                                }
+                            }
+                        }
+                    }
                 }
+
                 
-                Object returnObject = method.invoke(object,(Object[])null);
-                if(returnObject != null){
+
+                Object returnObject = method.invoke(object,arguments);
+                if(returnObject != null){   
                     if(returnObject instanceof ModelView){
                         ModelView modelView = (ModelView)returnObject;
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
@@ -146,4 +171,14 @@ public class FrontServlet extends HttpServlet {
         
         }
     }
+
+    public Object cast(HttpServletRequest request, Parameter parametre, Object o) {
+        try {
+            Method method = o.getClass().getMethod("get" + parametre.getName().substring(0, 1).toUpperCase() + parametre.getName().substring(1));
+            return method.invoke(o);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
 }

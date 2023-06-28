@@ -1,3 +1,9 @@
+<%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@page import="model.Employee"%>
+<%@page import="java.util.Vector"%>
+<% 
+    String noms = (String) request.getAttribute("employee");
+%>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +13,6 @@
     <title>Document</title>
 </head>
 <body>
-    <h1>Mety Sprint 5</h1>
+    <p><% out.print(noms); %></p>
 </body>
 </html>

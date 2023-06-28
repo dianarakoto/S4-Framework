@@ -6,7 +6,7 @@
         <title>Accueil</title>
     </head>
     <body>
-        <form action="./Front" method="get">
+        <form action="find-emp" method="get">
             <input type="text" name="Name">
             <input type="submit" value="Valider">
         </form>

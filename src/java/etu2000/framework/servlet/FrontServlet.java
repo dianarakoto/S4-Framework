@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package etu2000.framework.servlet;
 
 import etu2000.framework.Mapping;
@@ -29,6 +25,10 @@ public class FrontServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         try ( PrintWriter out = response.getWriter()) {
             out.println("<p>"+request.getRequestURL()+"</p>");
+            out.println("<p>Voici le contenu de l'hashmap:");
+            for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
+                out.print("-Url: "+entry.getKey()+"; Class: "+entry.getValue().getClassName()+"; Method: "+entry.getValue().getMethod());
+            }
         }
     }
 

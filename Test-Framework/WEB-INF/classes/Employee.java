@@ -1,6 +1,7 @@
 package model;
 
 import etu2000.framework.annotation.Url;
+import etu2000.framework.ModelView;
 
 public class Employee {
     int id;
@@ -26,7 +27,8 @@ public class Employee {
     }
     
     @Url("find-emp")
-    public void findAll(){
-        System.out.println("All employees");
+    public ModelView findAll(){
+        ModelView view = new ModelView("list.jsp");
+        return view;
     }
 }

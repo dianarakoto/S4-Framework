@@ -2,7 +2,7 @@
 <%@page import="model.Employee"%>
 <%@page import="java.util.Vector"%>
 <% 
-    Vector<String> noms = (Vector<String>) request.getAttribute("allEmployees");
+    Vector<Employee> noms = (Vector<Employee>) request.getAttribute("allEmployees");
 %>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +14,7 @@
 </head>
 <body>
     <% for(int i=0; i<noms.size(); i++) { %>
-        <p><% out.print(noms.get(i)); %></p>
+        <p><a href="get-info?id=<% out.print(noms.get(i).getId()); %>&&name=<% out.print(noms.get(i).getName()); %>"><% out.print(noms.get(i).getId()); %></a><% out.print(noms.get(i).getName()); %></p>
     <% } %>
 </body>
 </html>

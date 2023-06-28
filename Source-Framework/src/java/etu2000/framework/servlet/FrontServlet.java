@@ -3,29 +3,20 @@ package etu2000.framework.servlet;
 import etu2000.framework.Mapping;
 import etu2000.framework.annotation.Url;
 import etu2000.framework.ModelView;
-import jakarta.servlet.RequestDispatcher;
-import java.io.IOException;
-import java.io.PrintWriter;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.net.URL;
+import etu2000.framework.FileUpload;
+import jakarta.servlet.*;
+import jakarta.servlet.annotation.*;
+import jakarta.servlet.http.*;
+import java.io.*;
+import java.lang.reflect.*;
+import java.util.*;
 import java.sql.Date;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.net.*;
+import java.util.logging.*;
 
+@MultipartConfig
 public class FrontServlet extends HttpServlet {
+    int BYTE_SIZE = 8192;
     HashMap<String, Mapping> mappingUrls;
 
     public HashMap<String, Mapping> getMappingUrls() {
@@ -71,18 +62,52 @@ public class FrontServlet extends HttpServlet {
                 Mapping mapping = this.getMappingUrls().get(url);
                 Class clazz = Class.forName(mapping.getClassName());
                 Object object = clazz.getConstructor().newInstance();
-                Method method = clazz.getDeclaredMethod(mapping.getMethod());
+                Method[] methods = clazz.getDeclaredMethods();
+                Method method = null;
+                for (Method methode : methods) {
+                    if(methode.getName() == mapping.getMethod()){
+                        method = methode;
+                    }
+                }
 
+                Object[] arguments = null;
                 if(request.getParameterMap() != null){
                     Map<String, String[]> parameter = request.getParameterMap();
                     Set<String> parameterName = parameter.keySet();                    
                     String[] attribute= parameterName.toArray(new String[parameterName.size()]);
                     Field[] objectAttributes= object.getClass().getDeclaredFields();
+                    for(Field field : objectAttributes){
+                        try{
+                            if(field.getType() == FileUpload.class) {
+                                Method methody= object.getClass().getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
+                                Collection<Part> files = request.getParts();
+                                FileUpload file = this.fileTraitement(files, field);
+                                methody.invoke(object,file);
+                            }
+                        } catch(Exception e){
+                            out.println(e.getMessage());
+                        }
+                    }
                     this.setAttribute(request,attribute,objectAttributes,object);
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    if(parameterTypes.length != 0){
+                        arguments = new Object[parameterTypes.length];
+                        Parameter[] parameters = method.getParameters();
+                        int arg = 0;
+                        for (Parameter parametre : parameters) {
+                            String parametreName = parametre.getName();
+                            for (int k = 0; k<attribute.length; k++){
+                                if(attribute[k].equals(parametreName)){
+                                    arguments[arg] = cast(request, parametre, object);
+                                    arg++;
+                                }
+                            }
+                        }
+                    }
                 }
-                
-                Object returnObject = method.invoke(object,(Object[])null);
-                if(returnObject != null){
+
+                Object returnObject = method.invoke(object,arguments);
+                if(returnObject != null){   
                     if(returnObject instanceof ModelView){
                         ModelView modelView = (ModelView)returnObject;
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
@@ -146,4 +171,53 @@ public class FrontServlet extends HttpServlet {
         
         }
     }
+
+    public Object cast(HttpServletRequest request, Parameter parametre, Object o) {
+        try {
+            Method method = o.getClass().getMethod("get" + parametre.getName().substring(0, 1).toUpperCase() + parametre.getName().substring(1));
+            return method.invoke(o);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+
+    private FileUpload fileTraitement( Collection<Part> files, Field field){
+        FileUpload file = new FileUpload();
+        String name = field.getName();
+        boolean exists = false;
+        String filename = null;
+        Part filepart = null;
+        for( Part part : files ){
+            if( part.getName().equals(name) ){
+                filepart = part;
+                exists = true;
+                break;
+            }
+        }
+        try(InputStream io = filepart.getInputStream()){
+            ByteArrayOutputStream buffers = new ByteArrayOutputStream();
+            byte[] buffer = new byte[(int)filepart.getSize()];
+            int read;
+            while( ( read = io.read( buffer , 0 , buffer.length )) != -1 ){
+                buffers.write( buffer , 0, read );
+            }
+            file.setName( this.getFileName(filepart) );
+            file.setBytes( buffers.toByteArray() );
+            return file;
+        }catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    private String getFileName(Part part) {
+        String contentDisposition = part.getHeader("content-disposition");
+        String[] parts = contentDisposition.split(";");
+        for (String partStr : parts) {
+            if (partStr.trim().startsWith("filename"))
+                return partStr.substring(partStr.indexOf('=') + 1).trim().replace("\"", "");
+        }
+        return null;
+    }
+
 }

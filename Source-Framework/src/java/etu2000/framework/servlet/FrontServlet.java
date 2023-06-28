@@ -58,7 +58,7 @@ public class FrontServlet extends HttpServlet {
             out.println("<p>"+request.getRequestURL()+"</p>");
             out.println("<p>Voici le contenu de l'hashmap:");
            for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
-               out.println("-Url: "+entry.getKey()+"; Class: "+entry.getValue().getClassName()+"; Method: "+entry.getValue().getMethod());
+               out.print("-Url: "+entry.getKey()+"; Class: "+entry.getValue().getClassName()+"; Method: "+entry.getValue().getMethod());
            }
             String url = request.getRequestURI().substring(request.getContextPath().length()+1);
             if(this.getMappingUrls().containsKey(url)){
@@ -68,15 +68,9 @@ public class FrontServlet extends HttpServlet {
                 Method method = clazz.getDeclaredMethod(mapping.getMethod());
                 Object returnObject = method.invoke(object,(Object[])null);
                 if(returnObject instanceof ModelView){
+                    out.println("ie modelView io");
                     ModelView modelView = (ModelView)returnObject;
                     RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
-                    HashMap<String,Object> data= modelView.getData();
-                    int i = 0;
-                    for(HashMap.Entry<String,Object> d : data.entrySet()){
-                      request.setAttribute(d.getKey(),d.getValue());
-                      i++;
-                    }
-                    out.println(i);
                     requestDispatcher.forward(request,response);
                 }
             }

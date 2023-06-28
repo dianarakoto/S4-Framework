@@ -55,4 +55,9 @@ public class Employee {
         view.addItem("employee", name);
         return view;
     }
+
+    @Url("save-emp")
+    public String save(){
+        return this.getName();
+    }
 }

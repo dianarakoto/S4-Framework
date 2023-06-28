@@ -28,7 +28,7 @@ do
 done
 
 cd $MODEL
-javac -parameters -cp $LIB/framework.jar -d . *.java
+javac -cp $LIB/framework.jar -d . *.java
 
 cp $TEST_FRAMEWORK/*.jsp $TEMP
 cp $TEST_FRAMEWORK/WEB-INF/web.xml $TEMP/WEB-INF

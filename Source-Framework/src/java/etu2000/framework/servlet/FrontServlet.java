@@ -2,6 +2,7 @@ package etu2000.framework.servlet;
 
 import etu2000.framework.Mapping;
 import etu2000.framework.annotation.Url;
+import etu2000.framework.annotation.Scope;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
 import jakarta.servlet.*;
@@ -18,6 +19,7 @@ import java.util.logging.*;
 public class FrontServlet extends HttpServlet {
     int BYTE_SIZE = 8192;
     HashMap<String, Mapping> mappingUrls;
+    HashMap<Class, Object> singleton;
 
     public HashMap<String, Mapping> getMappingUrls() {
         return mappingUrls;
@@ -27,10 +29,19 @@ public class FrontServlet extends HttpServlet {
         this.mappingUrls = MappingUrls;
     }
 
+    public HashMap<Class, Object> getSingleton() {
+        return singleton;
+    }
+
+    public void setSingleton(HashMap<Class, Object> singleton) {
+        this.singleton = singleton;
+    }
+
     @Override
     public void init() throws ServletException {
         try{
             mappingUrls = new HashMap<>();
+            singleton = new HashMap<>();
             String packageName = getInitParameter("packages");
             URL root = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(".", "/"));
             for (File file : new File(root.getFile()).listFiles()) {
@@ -41,7 +52,11 @@ public class FrontServlet extends HttpServlet {
                         mappingUrls.put(method.getAnnotation(Url.class).value(), new Mapping(classes.getName(), method.getName()));
                     }
                 }
+                if(classes.isAnnotationPresent(Scope.class) && classes.getAnnotation(Scope.class).value().equalsIgnoreCase("singleton")){
+                    singleton.put(classes, null);
+                }
             }
+
         }
         catch (Exception e){
             
@@ -51,26 +66,49 @@ public class FrontServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws Exception, IllegalAccessException, InstantiationException, IllegalArgumentException, InvocationTargetException {
         response.setContentType("text/html;charset=UTF-8");
-        try ( PrintWriter out = response.getWriter()) {
+        PrintWriter out = response.getWriter();
+        try {
             out.println("<p>"+request.getRequestURL()+"</p>");
             out.println("<p>Voici le contenu de l'hashmap:");
            for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
                out.println("-Url: "+entry.getKey()+"; Class: "+entry.getValue().getClassName()+"; Method: "+entry.getValue().getMethod());
            }
             String url = request.getRequestURI().substring(request.getContextPath().length()+1);
+            // out.println(url);
             if(this.getMappingUrls().containsKey(url)){
                 Mapping mapping = this.getMappingUrls().get(url);
                 Class clazz = Class.forName(mapping.getClassName());
-                Object object = clazz.getConstructor().newInstance();
+                Object object = null;
+                out.println("mandalo eto");
+                if(this.singleton.containsKey(clazz)){
+                    if(this.singleton.get(clazz) == null){
+                        this.singleton.put(clazz, clazz.getConstructor().newInstance());
+                    }
+                    object = this.singleton.get(clazz);
+                }
+                else{
+                    object = clazz.getConstructor().newInstance();
+                }
+                out.println("mandalo eto(3)");
                 Method[] methods = clazz.getDeclaredMethods();
+                out.println("mandalo eto(4)");
                 Method method = null;
+                out.println("mandalo eto(5)");
                 for (Method methode : methods) {
                     if(methode.getName() == mapping.getMethod()){
                         method = methode;
                     }
                 }
+                out.println("yes");
+                int scopePresent = 0;
+                for (Map.Entry<Class, Object> entree : singleton.entrySet()) {
+                    out.println("-Class: "+entree.getKey()+"; Object: "+entree.getValue());
+                    scopePresent++;
+                }
+                out.println(scopePresent);
 
                 Object[] arguments = null;
+
                 if(request.getParameterMap() != null){
                     Map<String, String[]> parameter = request.getParameterMap();
                     Set<String> parameterName = parameter.keySet();                    
@@ -88,6 +126,7 @@ public class FrontServlet extends HttpServlet {
                             out.println(e.getMessage());
                         }
                     }
+
                     this.setAttribute(request,attribute,objectAttributes,object);
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     if(parameterTypes.length != 0){
@@ -105,10 +144,11 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 }
-
+                out.println(object);
                 Object returnObject = method.invoke(object,arguments);
                 if(returnObject != null){   
                     if(returnObject instanceof ModelView){
+                        out.println("yes");
                         ModelView modelView = (ModelView)returnObject;
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
                         HashMap<String,Object> data= modelView.getData();
@@ -125,6 +165,8 @@ public class FrontServlet extends HttpServlet {
                     }
                 }
             }
+        } catch(Exception e){
+            e.printStackTrace(out);
         }
     }
 
@@ -219,5 +261,24 @@ public class FrontServlet extends HttpServlet {
         }
         return null;
     }
+
+    public void reset(HttpServletRequest request, Field[] att, Object o) {
+    try {
+        for (int i = 0; i < att.length; i++) {
+            Method m = o.getClass().getMethod("set" + att[i].getName().substring(0, 1).toUpperCase() + att[i].getName().substring(1), att[i].getType());
+            if (att[i].getType() == String.class)
+                m.invoke(o, (Object[])null);
+            if (att[i].getType() == int.class || att[i].getType() == double.class)
+                m.invoke(o, 0);
+            if (att[i].getType() == Date.class)
+                m.invoke(o, (Object[])null);
+            if (att[i].getType() == boolean.class)
+                m.invoke(o, false);
+        }
+    } catch (Exception e) {
+        // Handle the exception appropriately (e.g., logging or throwing a custom exception)
+        e.printStackTrace();
+    }
+}
 
 }

@@ -13,5 +13,10 @@
         </form>
         <a href="find-emp">Find</a>
         <a href="test-fw">Testing</a>
+        <form action="test-singleton" method="post" enctype="multipart/form-data">
+            <input type="text" name="id">
+            <input type="text" name="name" placeholder="Identifiant" value="Diana">
+            <input type="submit" value="Valider">
+        </form>
     </body>
 </html>

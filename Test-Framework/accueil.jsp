@@ -6,15 +6,11 @@
         <title>Accueil</title>
     </head>
     <body>
-        <form action="save-emp" method="post" enctype="multipart/form-data">
-            <input type="text" name="name" placeholder="Identifiant" value="Diana">
-            <input type="file" name="badge">
-            <input type="submit" value="Valider">
-        </form>
+        <a href="get-info">Json</a>
         <a href="find-emp">Find</a>
         <a href="test-session">Session</a>
         <a href="test-fw">Testing</a>
-        <form action="test-singleton" method="post" enctype="multipart/form-data">
+        <form action="test-singleton" method="post">
             <input type="text" name="id">
             <input type="text" name="name" placeholder="Identifiant" value="Diana">
             <input type="submit" value="Valider">

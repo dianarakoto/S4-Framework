@@ -69,6 +69,7 @@ public class Employee {
     @Url("find-emp")
     public ModelView findAll(){
         ModelView view = new ModelView("test.jsp");
+        view.setJson(true);
         Vector<Employee> employees = new Vector<>();
         Employee un = new Employee(1, "Diana");
         Employee deux = new Employee(2, "Megane");
@@ -88,7 +89,9 @@ public class Employee {
     @Url("get-info")
     public ModelView getInfo(String name){
         ModelView view = new ModelView("saved.jsp");
+        view.setJson(true);
         view.addItem("employee", name);
+        view.addItem("olona", "za");
         return view;
     }
 

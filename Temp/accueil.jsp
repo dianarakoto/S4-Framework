@@ -12,6 +12,7 @@
             <input type="submit" value="Valider">
         </form>
         <a href="find-emp">Find</a>
+        <a href="test-session">Session</a>
         <a href="test-fw">Testing</a>
         <form action="test-singleton" method="post" enctype="multipart/form-data">
             <input type="text" name="id">

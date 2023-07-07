@@ -3,6 +3,7 @@ package etu2000.framework.servlet;
 import etu2000.framework.Mapping;
 import etu2000.framework.annotation.Url;
 import etu2000.framework.annotation.Scope;
+import etu2000.framework.annotation.Session;
 import etu2000.framework.annotation.Authentification;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
@@ -104,6 +105,15 @@ public class FrontServlet extends HttpServlet {
                                 }
                             }
                         }
+                        if(methode.isAnnotationPresent(Session.class)){
+                            HashMap<String,Object> Hashsessions=new HashMap<>();
+                            HttpSession sess = request.getSession();
+                            List<String> sessions = Collections.list(sess.getAttributeNames());
+                            for (String string : sessions) {
+                                Hashsessions.put(string,sess.getAttribute(string));
+                            }
+                            object.getClass().getDeclaredMethod("setSession",HashMap.class).invoke(object,Hashsessions);
+                        }
                         method = methode;
                     }
                 }
@@ -154,6 +164,16 @@ public class FrontServlet extends HttpServlet {
                 if(returnObject != null){   
                     if(returnObject instanceof ModelView){
                         ModelView modelView = (ModelView)returnObject;
+                        if(method.isAnnotationPresent(Session.class)) {
+                                HashMap<String,Object> Hashsessions=new HashMap<>();
+                                HttpSession session = request.getSession();
+                                List<String> sessions = Collections.list(session.getAttributeNames());
+                                Hashsessions = (HashMap<String,Object>) object.getClass().getDeclaredMethod("getSession").invoke(object);
+                                for (String string : Hashsessions.keySet()) {
+                                session.setAttribute(string,Hashsessions.get(string));
+                            }
+                        }    
+                        javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(sessionProfile));
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
                         this.checkMethod(modelView, request);
                         HashMap<String,Object> data= modelView.getData();

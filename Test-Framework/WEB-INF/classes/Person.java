@@ -2,6 +2,7 @@ package model;
 
 import etu2000.framework.annotation.Url;
 import etu2000.framework.annotation.Scope;
+import etu2000.framework.annotation.Session;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
 import java.sql.Date;

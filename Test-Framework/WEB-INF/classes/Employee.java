@@ -1,6 +1,7 @@
 package model;
 
 import etu2000.framework.annotation.Url;
+import etu2000.framework.annotation.Authentification;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
 import java.sql.Date;
@@ -52,6 +53,8 @@ public class Employee {
         setName(name);
     }
     
+
+    @Authentification(profile = "admin")
     @Url("find-emp")
     public ModelView findAll(){
         ModelView view = new ModelView("test.jsp");

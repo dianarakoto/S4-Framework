@@ -4,6 +4,7 @@ import etu2000.framework.Mapping;
 import etu2000.framework.annotation.Url;
 import etu2000.framework.annotation.Scope;
 import etu2000.framework.annotation.Session;
+import etu2000.framework.annotation.RestApi;
 import etu2000.framework.annotation.Authentification;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
@@ -25,6 +26,7 @@ public class FrontServlet extends HttpServlet {
     HashMap<Class, Object> singleton;
     String sessionName;
     String sessionProfile;
+    boolean containsFile = false;
     Gson gson = new Gson();
 
     public HashMap<String, Mapping> getMappingUrls() {
@@ -127,14 +129,21 @@ public class FrontServlet extends HttpServlet {
                     Set<String> parameterName = parameter.keySet();                    
                     String[] attribute= parameterName.toArray(new String[parameterName.size()]);
                     Field[] objectAttributes= object.getClass().getDeclaredFields();
+                    String contentType = request.getHeader("Content-Type");
                     for(Field field : objectAttributes){
                         try{
                             if(field.getType() == FileUpload.class) {
-                                Method methody= object.getClass().getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
-                                Collection<Part> files = request.getParts();
-                                FileUpload file = this.fileTraitement(files, field);
-                                methody.invoke(object,file);
-                            }
+                                    if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                                        containsFile= true;
+                                    } 
+                                    //set attribut file de la classe
+                                    if (containsFile == true) {
+                                        Method methody= object.getClass().getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
+                                        Collection<Part> files = request.getParts();
+                                        FileUpload file = this.fileTraitement(files, field);
+                                        methody.invoke(object,file);
+                                    }
+                                }
                         } catch(Exception e){
                             out.println(e.getMessage());
                         }
@@ -189,7 +198,12 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                     else {
-                        out.println(returnObject);
+                        if(method.isAnnotationPresent(RestApi.class)){
+
+                        }
+                        else{
+                            out.println(returnObject);
+                        }
                     }
                 }
             }

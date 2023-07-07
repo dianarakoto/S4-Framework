@@ -133,17 +133,17 @@ public class FrontServlet extends HttpServlet {
                     for(Field field : objectAttributes){
                         try{
                             if(field.getType() == FileUpload.class) {
-                                    if (contentType != null && contentType.startsWith("multipart/form-data")) {
-                                        containsFile= true;
-                                    } 
-                                    //set attribut file de la classe
-                                    if (containsFile == true) {
-                                        Method methody= object.getClass().getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
-                                        Collection<Part> files = request.getParts();
-                                        FileUpload file = this.fileTraitement(files, field);
-                                        methody.invoke(object,file);
-                                    }
+                                if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                                    containsFile= true;
+                                } 
+                                //set attribut file de la classe
+                                if (containsFile == true) {
+                                    Method methody= object.getClass().getMethod("set" + field.getName().substring(0, 1).toUpperCase() + field.getName().substring(1), field.getType());
+                                    Collection<Part> files = request.getParts();
+                                    FileUpload file = this.fileTraitement(files, field);
+                                    methody.invoke(object,file);
                                 }
+                            }
                         } catch(Exception e){
                             out.println(e.getMessage());
                         }
@@ -182,13 +182,22 @@ public class FrontServlet extends HttpServlet {
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
                         this.checkMethod(modelView, request);
                         HashMap<String,Object> data= modelView.getData();
-                        if(data.size()>0){
+                        if(data != null){
                             int i = 0;
                             for(HashMap.Entry<String,Object> d : data.entrySet()){
                                 request.setAttribute(d.getKey(),d.getValue());
                                 i++;
                             }
                         }
+                        if(modelView.getInvalidateSession()){
+                            request.getSession().invalidate();
+                        }
+
+                        List<String> sessions = modelView.getSessionRemove();
+                        for(String string : sessions){
+                            request.getSession().removeAttribute(string);
+                        }
+                        
                         if(modelView.getJson()){
                             response.setContentType("application/json");
                             out.println(gson.toJson(modelView.getData()));

@@ -6,6 +6,7 @@
         <title>Accueil</title>
     </head>
     <body>
+        <a href="test-api">Test Api</a>
         <a href="get-info">Json</a>
         <a href="find-emp">Find</a>
         <a href="test-session">Session</a>

@@ -2,6 +2,7 @@ package model;
 
 import etu2000.framework.annotation.Url;
 import etu2000.framework.annotation.Authentification;
+import etu2000.framework.annotation.RestApi;
 import etu2000.framework.annotation.Session;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
@@ -16,6 +17,15 @@ public class Employee {
     Date embauche;
     FileUpload badge;
     HashMap<String, Object> session;
+    boolean json;
+
+    public void setJson(boolean json){
+        this.json = json;
+    }
+
+    public boolean getJson(){
+        return json;
+    }
 
     public void setId(int id) {
         this.id = id;
@@ -88,11 +98,19 @@ public class Employee {
 
     @Url("get-info")
     public ModelView getInfo(String name){
-        ModelView view = new ModelView("saved.jsp");
+        ModelView view = new ModelView("test.jsp");
         view.setJson(true);
         view.addItem("employee", name);
         view.addItem("olona", "za");
         return view;
+    }
+
+    @RestApi
+    @Url("test-api")
+    public Employee getEmp(){
+        Employee emp = new Employee(1, "Diana");
+        this.setJson(true);
+        return emp;
     }
 
     @Session

@@ -16,5 +16,6 @@
             <input type="text" name="name" placeholder="Identifiant" value="Diana">
             <input type="submit" value="Valider">
         </form>
+        <a href="index">Log out</a>
     </body>
 </html>

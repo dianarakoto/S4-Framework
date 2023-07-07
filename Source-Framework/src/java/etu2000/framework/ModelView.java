@@ -1,13 +1,33 @@
 package etu2000.framework;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 public class ModelView {
     String view;
     HashMap<String, Object> data;
     HashMap<String, Object> session;
     boolean json;
-    
+    boolean invalidateSession = false;
+    List<String> sessionRemove = new ArrayList<String>();
+
+    public void setSessionRemove(List<String> sessionRemove){
+        this.sessionRemove = sessionRemove;
+    }
+
+    public List<String> getSessionRemove(){
+        return sessionRemove;
+    }
+
+    public boolean getInvalidateSession(){
+        return invalidateSession;
+    }
+
+    public void setInvalidateSession(boolean invalidateSession){
+        this.invalidateSession = invalidateSession;
+    }
+
     public boolean getJson(){
         return json;
     }

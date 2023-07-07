@@ -122,4 +122,11 @@ public class Employee {
         }
         return sessionName;
     }
+
+    @Url("index")
+    public ModelView logout(){
+        ModelView view = new ModelView("index.jsp");
+        view.setInvalidateSession(true);
+        return view;
+    }
 }

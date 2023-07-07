@@ -199,7 +199,8 @@ public class FrontServlet extends HttpServlet {
                     }
                     else {
                         if(method.isAnnotationPresent(RestApi.class)){
-
+                            response.setContentType("application/json");
+                            out.println(gson.toJson(returnObject));
                         }
                         else{
                             out.println(returnObject);

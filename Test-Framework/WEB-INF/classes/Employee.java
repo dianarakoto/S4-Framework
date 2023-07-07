@@ -2,16 +2,20 @@ package model;
 
 import etu2000.framework.annotation.Url;
 import etu2000.framework.annotation.Authentification;
+import etu2000.framework.annotation.Session;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
 import java.sql.Date;
-import java.util.Vector;
+import java.io.*;
+import java.util.*;
+import java.sql.Date;
 
 public class Employee {
     int id;
     String name;
     Date embauche;
     FileUpload badge;
+    HashMap<String, Object> session;
 
     public void setId(int id) {
         this.id = id;
@@ -44,6 +48,14 @@ public class Employee {
     public FileUpload getBadge(){
         return badge;
     }
+    
+    public void setSession(HashMap<String, Object> session){
+        this.session = session;
+    }
+
+    public HashMap<String, Object> getSession(){
+        return session;
+    }
 
     public Employee() {
     }
@@ -52,7 +64,6 @@ public class Employee {
         setId(id);
         setName(name);
     }
-    
 
     @Authentification(profile = "admin")
     @Url("find-emp")
@@ -79,5 +90,15 @@ public class Employee {
         ModelView view = new ModelView("saved.jsp");
         view.addItem("employee", name);
         return view;
+    }
+
+    @Session
+    @Url("test-session")
+    public String testSession(){
+        String sessionName = null;
+        for (Map.Entry<String, Object> entry : getSession().entrySet()) {
+            sessionName = entry.getKey();
+        }
+        return sessionName;
     }
 }

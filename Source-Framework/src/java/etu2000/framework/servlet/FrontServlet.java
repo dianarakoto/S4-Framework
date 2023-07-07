@@ -3,6 +3,7 @@ package etu2000.framework.servlet;
 import etu2000.framework.Mapping;
 import etu2000.framework.annotation.Url;
 import etu2000.framework.annotation.Scope;
+import etu2000.framework.annotation.Authentification;
 import etu2000.framework.ModelView;
 import etu2000.framework.FileUpload;
 import jakarta.servlet.*;
@@ -20,6 +21,8 @@ public class FrontServlet extends HttpServlet {
     int BYTE_SIZE = 8192;
     HashMap<String, Mapping> mappingUrls;
     HashMap<Class, Object> singleton;
+    String sessionName;
+    String sessionProfile;
 
     public HashMap<String, Mapping> getMappingUrls() {
         return mappingUrls;
@@ -43,6 +46,8 @@ public class FrontServlet extends HttpServlet {
             mappingUrls = new HashMap<>();
             singleton = new HashMap<>();
             String packageName = getInitParameter("packages");
+            this.sessionName = getInitParameter("sessionName");
+            this.sessionProfile = getInitParameter("sessionProfile");
             URL root = Thread.currentThread().getContextClassLoader().getResource(packageName.replace(".", "/"));
             for (File file : new File(root.getFile()).listFiles()) {
                 String className = file.getName().replaceAll(".class$", "");
@@ -79,7 +84,6 @@ public class FrontServlet extends HttpServlet {
                 Mapping mapping = this.getMappingUrls().get(url);
                 Class clazz = Class.forName(mapping.getClassName());
                 Object object = null;
-                out.println("mandalo eto");
                 if(this.singleton.containsKey(clazz)){
                     if(this.singleton.get(clazz) == null){
                         this.singleton.put(clazz, clazz.getConstructor().newInstance());
@@ -89,23 +93,25 @@ public class FrontServlet extends HttpServlet {
                 else{
                     object = clazz.getConstructor().newInstance();
                 }
-                out.println("mandalo eto(3)");
                 Method[] methods = clazz.getDeclaredMethods();
-                out.println("mandalo eto(4)");
                 Method method = null;
-                out.println("mandalo eto(5)");
                 for (Method methode : methods) {
-                    if(methode.getName() == mapping.getMethod()){
+                    if(methode.getName().equals(mapping.getMethod())){
+                        if(methode.isAnnotationPresent(Authentification.class)){
+                            if(request.getSession().getAttribute(sessionName) != null ){
+                                if(request.getSession().getAttribute(sessionProfile) != null && !methode.getAnnotation(Authentification.class).profile().equals("") && !methode.getAnnotation(Authentification.class).profile().equals(request.getSession().getAttribute(sessionProfile))){
+                                    throw new Exception("You can't access this method");
+                                }
+                            }
+                        }
                         method = methode;
                     }
                 }
-                out.println("yes");
                 int scopePresent = 0;
                 for (Map.Entry<Class, Object> entree : singleton.entrySet()) {
                     out.println("-Class: "+entree.getKey()+"; Object: "+entree.getValue());
                     scopePresent++;
                 }
-                out.println(scopePresent);
 
                 Object[] arguments = null;
 
@@ -144,20 +150,21 @@ public class FrontServlet extends HttpServlet {
                         }
                     }
                 }
-                out.println(object);
                 Object returnObject = method.invoke(object,arguments);
                 if(returnObject != null){   
                     if(returnObject instanceof ModelView){
-                        out.println("yes");
                         ModelView modelView = (ModelView)returnObject;
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
+                        this.checkMethod(modelView, request);
                         HashMap<String,Object> data= modelView.getData();
-                        int i = 0;
-                        for(HashMap.Entry<String,Object> d : data.entrySet()){
-                          request.setAttribute(d.getKey(),d.getValue());
-                          i++;
+                        if(data.size()>0){
+                            int i = 0;
+                            for(HashMap.Entry<String,Object> d : data.entrySet()){
+                                request.setAttribute(d.getKey(),d.getValue());
+                                i++;
+                            }
                         }
-                        out.println(i);
+                        out.println(request.getSession().getAttribute("profile"));
                         requestDispatcher.forward(request,response);
                     }
                     else {
@@ -261,24 +268,14 @@ public class FrontServlet extends HttpServlet {
         }
         return null;
     }
-
-    public void reset(HttpServletRequest request, Field[] att, Object o) {
-    try {
-        for (int i = 0; i < att.length; i++) {
-            Method m = o.getClass().getMethod("set" + att[i].getName().substring(0, 1).toUpperCase() + att[i].getName().substring(1), att[i].getType());
-            if (att[i].getType() == String.class)
-                m.invoke(o, (Object[])null);
-            if (att[i].getType() == int.class || att[i].getType() == double.class)
-                m.invoke(o, 0);
-            if (att[i].getType() == Date.class)
-                m.invoke(o, (Object[])null);
-            if (att[i].getType() == boolean.class)
-                m.invoke(o, false);
+    
+    public void checkMethod(ModelView modelView, HttpServletRequest request) throws Exception{
+        if(modelView.getSession() != null){
+            HashMap<String,Object> objet = modelView.getSession();
+            for(Map.Entry<String, Object> e : objet.entrySet()){
+                request.getSession().setAttribute(e.getKey(), e.getValue());
+            }
         }
-    } catch (Exception e) {
-        // Handle the exception appropriately (e.g., logging or throwing a custom exception)
-        e.printStackTrace();
     }
 }
 
-}

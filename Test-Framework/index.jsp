@@ -1,22 +1,16 @@
-<%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Accueil</title>
-    </head>
-    <body>
-        <form action="save-emp" method="post" enctype="multipart/form-data">
-            <input type="text" name="name" placeholder="Identifiant" value="Diana">
-            <input type="file" name="badge">
-            <input type="submit" value="Valider">
-        </form>
-        <a href="find-emp">Find</a>
-        <a href="test-fw">Testing</a>
-        <form action="test-singleton" method="post" enctype="multipart/form-data">
-            <input type="text" name="id">
-            <input type="text" name="name" placeholder="Identifiant" value="Diana">
-            <input type="submit" value="Valider">
-        </form>
-    </body>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form action="connect" method="post">
+        <input type="text" name="name">
+        <input type="password" name="password">
+        <input type="submit" value="Se connecter">
+    </form>
+</body>
 </html>

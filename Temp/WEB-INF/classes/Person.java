@@ -11,7 +11,16 @@ import java.util.Vector;
 public class Person {
     int id;
     String name;
+    String password;
     int appel = 1;
+
+    public String getPassword(){
+        return password;
+    }
+
+    public void setPassword(String password){
+        this.password = password;
+    }
 
     public int getId(){
         return id;
@@ -41,6 +50,15 @@ public class Person {
     public ModelView test(){
         ModelView view = new ModelView("singleton.jsp");
         view.addItem("test", this);
+        return view;
+    }
+
+    @Url("connect")
+    public ModelView connect(){
+        ModelView view = new ModelView("accueil.jsp");
+        view.addSessionItem("isConnected", this);
+        view.addSessionItem("profile", this.getName());
+        view.addItem("info", this);
         return view;
     }
 

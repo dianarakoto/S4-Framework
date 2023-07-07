@@ -16,6 +16,7 @@ import java.util.*;
 import java.sql.Date;
 import java.net.*;
 import java.util.logging.*;
+import com.google.gson.Gson; 
 
 @MultipartConfig
 public class FrontServlet extends HttpServlet {
@@ -24,6 +25,7 @@ public class FrontServlet extends HttpServlet {
     HashMap<Class, Object> singleton;
     String sessionName;
     String sessionProfile;
+    Gson gson = new Gson();
 
     public HashMap<String, Mapping> getMappingUrls() {
         return mappingUrls;
@@ -74,11 +76,11 @@ public class FrontServlet extends HttpServlet {
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
         try {
-            out.println("<p>"+request.getRequestURL()+"</p>");
-            out.println("<p>Voici le contenu de l'hashmap:");
-           for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
-               out.println("-Url: "+entry.getKey()+"; Class: "+entry.getValue().getClassName()+"; Method: "+entry.getValue().getMethod());
-           }
+        //     out.println("<p>"+request.getRequestURL()+"</p>");
+        //     out.println("<p>Voici le contenu de l'hashmap:");
+        //    for (Map.Entry<String, Mapping> entry : mappingUrls.entrySet()) {
+        //        out.println("-Url: "+entry.getKey()+"; Class: "+entry.getValue().getClassName()+"; Method: "+entry.getValue().getMethod());
+        //    }
             String url = request.getRequestURI().substring(request.getContextPath().length()+1);
             // out.println(url);
             if(this.getMappingUrls().containsKey(url)){
@@ -117,11 +119,6 @@ public class FrontServlet extends HttpServlet {
                         method = methode;
                     }
                 }
-                int scopePresent = 0;
-                for (Map.Entry<Class, Object> entree : singleton.entrySet()) {
-                    out.println("-Class: "+entree.getKey()+"; Object: "+entree.getValue());
-                    scopePresent++;
-                }
 
                 Object[] arguments = null;
 
@@ -142,7 +139,6 @@ public class FrontServlet extends HttpServlet {
                             out.println(e.getMessage());
                         }
                     }
-
                     this.setAttribute(request,attribute,objectAttributes,object);
                     Class<?>[] parameterTypes = method.getParameterTypes();
                     if(parameterTypes.length != 0){
@@ -173,7 +169,7 @@ public class FrontServlet extends HttpServlet {
                                 session.setAttribute(string,Hashsessions.get(string));
                             }
                         }    
-                        javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(sessionProfile));
+                        // javax.swing.JOptionPane.showMessageDialog(new javax.swing.JFrame(),request.getSession().getAttribute(sessionProfile));
                         RequestDispatcher requestDispatcher = request.getRequestDispatcher(modelView.getView());
                         this.checkMethod(modelView, request);
                         HashMap<String,Object> data= modelView.getData();
@@ -184,8 +180,13 @@ public class FrontServlet extends HttpServlet {
                                 i++;
                             }
                         }
-                        out.println(request.getSession().getAttribute("profile"));
-                        requestDispatcher.forward(request,response);
+                        if(modelView.getJson()){
+                            response.setContentType("application/json");
+                            out.println(gson.toJson(modelView.getData()));
+                        }
+                        else{
+                            requestDispatcher.forward(request,response);
+                        }
                     }
                     else {
                         out.println(returnObject);
@@ -193,7 +194,7 @@ public class FrontServlet extends HttpServlet {
                 }
             }
         } catch(Exception e){
-            e.printStackTrace(out);
+
         }
     }
 
@@ -246,8 +247,9 @@ public class FrontServlet extends HttpServlet {
             Method method = o.getClass().getMethod("get" + parametre.getName().substring(0, 1).toUpperCase() + parametre.getName().substring(1));
             return method.invoke(o);
         } catch (Exception e) {
-            return e.getMessage();
+            // return e.getMessage();
         }
+        return null;
     }
 
     private FileUpload fileTraitement( Collection<Part> files, Field field){
@@ -274,7 +276,6 @@ public class FrontServlet extends HttpServlet {
             file.setBytes( buffers.toByteArray() );
             return file;
         }catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }

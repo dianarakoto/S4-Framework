@@ -6,6 +6,15 @@ public class ModelView {
     String view;
     HashMap<String, Object> data;
     HashMap<String, Object> session;
+    boolean json;
+    
+    public boolean getJson(){
+        return json;
+    }
+
+    public void setJson(boolean json){
+        this.json = json;
+    }
 
     public HashMap<String, Object> getSession() {
         return session;
